@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tic Tac Toe</title>
+  <link rel="stylesheet" href="sct3.css" />
+</head>
+<body>
+  <h1>Tic Tac Toe</h1>
+  <div id="gameMode">
+    <button onclick="startGame('human')">2 Player</button>
+    <button onclick="startGame('computer')">Vs Computer</button>
+  </div>
+  <div id="board" class="board"></div>
+  <div id="status"></div>
+  <button id="restartBtn" onclick="restartGame()">Restart</button>
+  <script src="sct3.js"></script>
+</body>
+</html>
+
+CSS CODE START HERE
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin-top: 30px;
+}
+
+.board {
+  align-content: center;
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  margin: 20px auto;
+  gap: 5px;
+}
+
+.cell {
+  width: 100px;
+  height: 100px;
+  background: #f2f2f2;
+  font-size: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+#status {
+  margin: 20px;
+  font-size: 1.2em;
+}
+
+#restartBtn {
+  padding: 10px 20px;
+  font-size: 1em;
+}
+
+JAVASCRIPT START HERE
+let board = ['', '', '', '', '', '', '', '', ''];
+let currentPlayer = 'X';
+let isGameOver = false;
+let vsComputer = false;
+
+const winPatterns = [
+  [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+  [0, 3, 6], [1, 4, 7], [2, 5, 8], // cols
+  [0, 4, 8], [2, 4, 6]             // diags
+];
+
+function startGame(mode) {
+  vsComputer = (mode === 'computer');
+  board = ['', '', '', '', '', '', '', '', ''];
+  currentPlayer = 'X';
+  isGameOver = false;
+  document.getElementById('status').textContent = `Player ${currentPlayer}'s turn`;
+  drawBoard();
+}
+
+function drawBoard() {
+  const boardDiv = document.getElementById('board');
+  boardDiv.innerHTML = '';
+  board.forEach((cell, idx) => {
+    const cellDiv = document.createElement('div');
+    cellDiv.className = 'cell';
+    cellDiv.textContent = cell;
+    cellDiv.addEventListener('click', () => handleCellClick(idx));
+    boardDiv.appendChild(cellDiv);
+  });
+}
+
+function handleCellClick(index) {
+  if (isGameOver || board[index]) return;
+
+  board[index] = currentPlayer;
+  drawBoard();
+  if (checkWin()) {
+    document.getElementById('status').textContent = `Player ${currentPlayer} wins!`;
+    isGameOver = true;
+    return;
+  } else if (board.every(cell => cell)) {
+    document.getElementById('status').textContent = "It's a draw!";
+    isGameOver = true;
+    return;
+  }
+
+  currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+  document.getElementById('status').textContent = `Player ${currentPlayer}'s turn`;
+
+  if (vsComputer && currentPlayer === 'O') {
+    setTimeout(computerMove, 500); // slight delay for realism
+  }
+}
+
+function checkWin() {
+  return winPatterns.some(pattern => {
+    const [a, b, c] = pattern;
+    return board[a] && board[a] === board[b] && board[a] === board[c];
+  });
+}
+
+function computerMove() {
+  let available = board.map((val, idx) => val === '' ? idx : null).filter(v => v !== null);
+  let move = available[Math.floor(Math.random() * available.length)];
+  handleCellClick(move);
+}
+
+function restartGame() {
+  startGame(vsComputer ? 'computer' : 'human');
+}
